@@ -1,0 +1,50 @@
+---
+- name: Настройка Nginx
+  hosts: all
+  become: yes
+  vars:
+    i_port: 80
+    files_path: /var/www/filiki
+
+  tasks:
+    - name: Установка Nginx
+      apt:
+        name: nginx
+        state: present
+        update_cache: yes
+
+    - name: Создание директории
+      file:
+        path: "{{ files_path }}"
+        state: directory
+        mode: '0755'
+
+    - name: Создание файла
+      copy:
+        content: "Hello I am Elina! Working on port {{ i_port }}"
+        dest: "{{ files_path }}/test.txt"
+
+    - name: Мой модуль для смены порта
+      nginxconfig:
+        port: "{{ i_port }}"
+        files_path: "{{ files_path }}"
+        dest: /etc/nginx/sites-available/filserver
+      notify: Restart Nginx
+
+    - name: Конфигурация
+      file:
+        src: /etc/nginx/sites-available/filserver
+        dest: /etc/nginx/sites-enabled/filserver
+        state: link
+
+    - name: Удаление дефолтного конфига
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: Restart Nginx
+
+  handlers:
+    - name: Restart Nginx
+      service:
+        name: nginx
+        state: restarted

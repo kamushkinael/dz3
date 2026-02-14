@@ -1,0 +1,1 @@
+while true; do curl -s -o /dev/null -w "%{http_code} %{time_total}s " https://mirror.yandex.ru && date +"%Y-%m-%d %H:%M:%S"; sleep 1; done
